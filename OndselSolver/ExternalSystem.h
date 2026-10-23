@@ -16,11 +16,6 @@
 //#include "ASMTAssembly.h"
 #include "Part.h"
 
-namespace Assembly
-{
-	class AssemblyObject;
-}
-
 namespace MbD {
 	class CADSystem;
 	class ASMTAssembly;
@@ -43,7 +38,6 @@ namespace MbD {
 
 		CADSystem* cadSystem;
         ASMTAssembly* asmtAssembly;
-        Assembly::AssemblyObject* freecadAssemblyObject;
 
 	};
 }

@@ -9,7 +9,6 @@
 #include "ExternalSystem.h"
 #include "CADSystem.h"
 #include "ASMTAssembly.h"
-//#include <Mod/Assembly/App/AssemblyObject.h>
 #include "System.h"
 
 using namespace MbD;
@@ -22,9 +21,6 @@ void MbD::ExternalSystem::preMbDrun(std::shared_ptr<System> mbdSys)
     else if (asmtAssembly) {
         asmtAssembly->preMbDrun(mbdSys);
         //asmtAssembly->externalSystem->preMbDrun(mbdSys);
-    }
-    else if (freecadAssemblyObject) {
-        //freecadAssemblyObject->preMbDrun();
     }
     else {
 		throw SimulationStoppingError("To be implemented.");
@@ -44,9 +40,6 @@ void MbD::ExternalSystem::updateFromMbD()
 	else if (asmtAssembly) {
 		asmtAssembly->updateFromMbD();
 	}
-    else if (freecadAssemblyObject) {
-        //freecadAssemblyObject->updateFromMbD();
-    }
     else {
 		throw SimulationStoppingError("To be implemented.");
 	}
@@ -62,9 +55,6 @@ void MbD::ExternalSystem::outputFor(AnalysisType type)
 		asmtAssembly->compareResults(type);
 		asmtAssembly->outputResults(type);
         //asmtAssembly->externalSystem->outputFor(type);
-    }
-    else if (freecadAssemblyObject) {
-        //freecadAssemblyObject->outputResults(type);
     }
     else {
 		throw SimulationStoppingError("To be implemented.");
