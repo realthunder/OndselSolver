@@ -112,9 +112,16 @@ bool NewtonRaphson::isConvergedToNumericalLimit()
 	size_t nDivergenceMax = 3;
 	auto dxNormIterNo = dxNorms->at(iterNo);
 	if (iterNo > 0) {
-		auto dxNormIterNoOld = dxNorms->at(iterNo);
+		// The previous step: comparing a step with itself made "still
+		// converging" never true, so every small step counted as a divergence.
+		auto dxNormIterNoOld = dxNorms->at(iterNo - 1);
 		auto farTooLargeError = dxNormIterNo > tooLargeTol;
-		auto worthIterating = dxNormIterNo > (smallEnoughTol * pow(10.0, (iterNo / iterMax) * nDecade));
+		// The tolerance relaxes from machine epsilon towards tooLargeTol as the
+		// iterations run out; in integer division iterNo / iterMax is 0 until the
+		// last iteration, so it never relaxed.
+		auto worthIterating = dxNormIterNo
+			> (smallEnoughTol
+			   * pow(10.0, (static_cast<double>(iterNo) / static_cast<double>(iterMax)) * nDecade));
 		bool stillConverging;
 		if (dxNormIterNo < (0.5 * dxNormIterNoOld)) {
 			stillConverging = true;
