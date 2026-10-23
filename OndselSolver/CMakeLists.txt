@@ -66,6 +66,7 @@ set(ONDSELSOLVER_SRC
         ASMTPlanarJoint.cpp
         ASMTPointInLineJoint.cpp
         ASMTPointInPlaneJoint.cpp
+        ASMTPointOnCurveJoint.cpp
         ASMTPrincipalMassMarker.cpp
         ASMTRackPinionJoint.cpp
         ASMTRefCurve.cpp
@@ -253,6 +254,8 @@ set(ONDSELSOLVER_SRC
         PlanarJoint.cpp
         PointInLineJoint.cpp
         PointInPlaneJoint.cpp
+        PointOnCurveConstraintIJ.cpp
+        PointOnCurveJoint.cpp
         Polynomial.cpp
         PosICDragLimitNewtonRaphson.cpp
         PosICDragNewtonRaphson.cpp
@@ -385,6 +388,7 @@ set(ONDSELSOLVER_HEADERS
         ASMTPlanarJoint.h
         ASMTPointInLineJoint.h
         ASMTPointInPlaneJoint.h
+        ASMTPointOnCurveJoint.h
         ASMTPrincipalMassMarker.h
         ASMTRackPinionJoint.h
         ASMTRefCurve.h
@@ -576,6 +580,8 @@ set(ONDSELSOLVER_HEADERS
         PlanarJoint.h
         PointInLineJoint.h
         PointInPlaneJoint.h
+        PointOnCurveConstraintIJ.h
+        PointOnCurveJoint.h
         PosICDragLimitNewtonRaphson.h
         PosICDragNewtonRaphson.h
         PosICKineNewtonRaphson.h

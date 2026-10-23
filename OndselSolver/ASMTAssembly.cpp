@@ -28,6 +28,7 @@
 #include "ASMTAllowRotation.h"
 #include "ASMTUniversalJoint.h"
 #include "ASMTPointInPlaneJoint.h"
+#include "ASMTPointOnCurveJoint.h"
 #include "ASMTPrincipalMassMarker.h"
 #include "ASMTForceTorque.h"
 #include "ASMTConstantGravity.h"
@@ -750,6 +751,11 @@ void MbD::ASMTAssembly::readJoints(std::vector<std::string>& lines)
         }
         else if (jointsLines[0] == "\t\t\tPointInPlaneJoint") {
             joint = CREATE<ASMTPointInPlaneJoint>::With();
+        }
+        // A curve the host evaluates: read back, it has no function and cannot
+        // be solved (ASMTPointOnCurveJoint).
+        else if (jointsLines[0] == "\t\t\tPointOnCurveJoint") {
+            joint = CREATE<ASMTPointOnCurveJoint>::With();
         }
         else {
             throw SimulationStoppingError("To be implemented.");

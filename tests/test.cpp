@@ -7,10 +7,12 @@
 #include <ASMTGearJoint.h>
 #include <ASMTMarker.h>
 #include <ASMTPart.h>
+#include <ASMTPointOnCurveJoint.h>
 #include <ASMTPrincipalMassMarker.h>
 #include <ASMTRevoluteJoint.h>
 #include <ASMTRotationalMotion.h>
 #include <ASMTSimulationParameters.h>
+#include <ASMTTranslationalJoint.h>
 #include <cmath>
 
 using namespace MbD;
@@ -271,5 +273,92 @@ TEST(OndselSolver, rotationalMotionCountsTurns) {
 			EXPECT_NEAR(std::remainder(turnAboutZ(b) + 45.0 * t, 2.0 * M_PI), 0.0, 1.0e-8) << hout << " " << t;
 		}
 		EXPECT_NEAR(assembly->times->back(), 1.2, 1.0e-9) << hout;
+	}
+}
+
+// A point held on a curve the host evaluates (PointOnCurveJoint): a disk cam
+// -- a circle of radius 20 about (6, 0) in the cam's frame, the cam turned by
+// a rotational motion at 10*time about z -- and a follower on a translational
+// joint along y through the axis, its point on the circle. The host function
+// is the circle's: the height above the cam's plane, and the distance from
+// the circle in it, with their gradients and Hessians. The follower's height
+// is 6 sin(theta) + sqrt(20^2 - 36 cos(theta)^2) at every frame, at output
+// steps of up to 2 rad.
+TEST(OndselSolver, pointOnCurveHostFunction) {
+	const double e = 6.0;
+	const double r = 20.0;
+	PointOnCurveFunction circle = [e, r](const std::array<double, 3>& x, PointOnCurveValues& v) {
+		const double dx = x[0] - e;
+		const double dy = x[1];
+		const double rho = std::hypot(dx, dy);
+		const double nx = dx / rho;
+		const double ny = dy / rho;
+		v = PointOnCurveValues {};
+		v.value = { x[2], rho - r };
+		v.gradient[0] = { 0.0, 0.0, 1.0 };
+		v.gradient[1] = { nx, ny, 0.0 };
+		v.hessian[1][0] = { (1.0 - nx * nx) / rho, -nx * ny / rho, 0.0 };
+		v.hessian[1][1] = { -nx * ny / rho, (1.0 - ny * ny) / rho, 0.0 };
+	};
+	auto lift = [e, r](double theta) {
+		const double c = e * std::cos(theta);
+		return e * std::sin(theta) + std::sqrt(r * r - c * c);
+	};
+	for (double hout : { 0.05, 0.2 }) {
+		auto assembly = CREATE<ASMTAssembly>::With();
+		assembly->setName("Assembly");
+		assembly->addMarker(marker("mA", 0.0));
+		auto slide = marker("mS", 0.0);
+		slide->setRotationMatrix(1, 0, 0, 0, 0, 1, 0, -1, 0);  // z along y
+		assembly->addMarker(slide);
+		auto cam = part("Cam", 0.0);
+		auto follower = part("F", 0.0);
+		follower->setPosition3D(0.0, lift(0.0), 0.0);
+		auto s = marker("s", 0.0);
+		s->setRotationMatrix(1, 0, 0, 0, 0, 1, 0, -1, 0);
+		follower->addMarker(s);
+		assembly->addPart(cam);
+		assembly->addPart(follower);
+		auto rev = CREATE<ASMTRevoluteJoint>::With();
+		rev->setName("Rev");
+		rev->setMarkerI("/Assembly/mA");
+		rev->setMarkerJ("/Assembly/Cam/m");
+		assembly->addJoint(rev);
+		auto sli = CREATE<ASMTTranslationalJoint>::With();
+		sli->setName("Slider");
+		sli->setMarkerI("/Assembly/mS");
+		sli->setMarkerJ("/Assembly/F/s");
+		assembly->addJoint(sli);
+		auto onCurve = ASMTPointOnCurveJoint::With();
+		onCurve->setName("Cam");
+		onCurve->setMarkerI("/Assembly/Cam/m");
+		onCurve->setMarkerJ("/Assembly/F/m");
+		onCurve->setCurve("circle", circle);
+		assembly->addJoint(onCurve);
+		auto motion = CREATE<ASMTRotationalMotion>::With();
+		motion->setName("Motion");
+		motion->setMarkerI("/Assembly/mA");
+		motion->setMarkerJ("/Assembly/Cam/m");
+		motion->setRotationZ("10*time");
+		assembly->addMotion(motion);
+		auto sim = assembly->simulationParameters;
+		sim->settstart(0.0);
+		sim->settend(4.0);
+		sim->sethout(hout);
+		sim->sethmin(1.0e-9);
+		sim->sethmax(1.0);
+		sim->seterrorTol(1.0e-6);
+		assembly->runKINEMATIC();
+		auto frames = assembly->numberOfFrames();
+		ASSERT_GE(frames, 20u) << hout;
+		for (size_t i = 0; i < frames; i++) {
+			assembly->updateForFrame(i);
+			auto t = assembly->times->at(i);
+			double x, y, z;
+			follower->getPosition3D(x, y, z);
+			EXPECT_NEAR(std::remainder(turnAboutZ(cam) - 10.0 * t, 2.0 * M_PI), 0.0, 1.0e-9) << hout << " " << t;
+			EXPECT_NEAR(y, lift(10.0 * t), 1.0e-9) << hout << " " << t;
+			EXPECT_NEAR(x, 0.0, 1.0e-9) << hout << " " << t;
+		}
 	}
 }
