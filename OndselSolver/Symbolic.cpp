@@ -22,24 +22,38 @@ Symbolic::Symbolic()
 {
 }
 
+namespace {
+	// times() and sum() build a new Product or Sum from the terms of the ones
+	// they are given. They used to insert into the given one's own terms
+	// vector, so the argument changed too: a Power whose exponent is a Sum
+	// (Power::differentiateWRTx forms sum(y, -1)) got its exponent decremented
+	// in place, and the expression it belonged to (a velocity formed earlier
+	// and still in use) changed value. The new node copies the vector anyway.
+	std::shared_ptr<std::vector<Symsptr>> copyOfTerms(const Symsptr& arg)
+	{
+		return std::make_shared<std::vector<Symsptr>>(*arg->getTerms());
+	}
+}
+
+
 Symsptr MbD::Symbolic::times(Symsptr arg, Symsptr arg1)
 {
 	if (arg->isProduct()) {
 		if (arg1->isProduct()) {
-			auto newTerms = arg->getTerms();
+			auto newTerms = copyOfTerms(arg);
 			auto arg1Terms = arg1->getTerms();
 			newTerms->insert(newTerms->end(), arg1Terms->begin(), arg1Terms->end());
 			return std::make_shared<Product>(newTerms);
 		}
 		else {
-			auto newTerms = arg->getTerms();
+			auto newTerms = copyOfTerms(arg);
 			newTerms->insert(newTerms->end(), arg1);
 			return std::make_shared<Product>(newTerms);
 		}
 	}
 	else {
 		if (arg1->isProduct()) {
-			auto newTerms = arg1->getTerms();
+			auto newTerms = copyOfTerms(arg1);
 			newTerms->insert(newTerms->begin(), arg);
 			return std::make_shared<Product>(newTerms);
 		}
@@ -53,20 +67,20 @@ Symsptr MbD::Symbolic::sum(Symsptr arg, Symsptr arg1)
 {
 	if (arg->isSum()) {
 		if (arg1->isSum()) {
-			auto newTerms = arg->getTerms();
+			auto newTerms = copyOfTerms(arg);
 			auto arg1Terms = arg1->getTerms();
 			newTerms->insert(newTerms->end(), arg1Terms->begin(), arg1Terms->end());
 			return std::make_shared<Sum>(newTerms);
 		}
 		else {
-			auto newTerms = arg->getTerms();
+			auto newTerms = copyOfTerms(arg);
 			newTerms->insert(newTerms->end(), arg1);
 			return std::make_shared<Sum>(newTerms);
 		}
 	}
 	else {
 		if (arg1->isSum()) {
-			auto newTerms = arg1->getTerms();
+			auto newTerms = copyOfTerms(arg1);
 			newTerms->insert(newTerms->begin(), arg);
 			return std::make_shared<Sum>(newTerms);
 		}

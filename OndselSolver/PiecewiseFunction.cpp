@@ -10,6 +10,7 @@
 #include <iterator>
 
 #include "PiecewiseFunction.h"
+#include "Constant.h"
 
 using namespace MbD;
 
@@ -48,6 +49,26 @@ Symsptr MbD::PiecewiseFunction::simplifyUntil(Symsptr, std::shared_ptr<std::unor
 		[&](auto& func) { return func->simplifyUntil(func, set); }
 	);
 	return std::make_shared<PiecewiseFunction>(xx, simplifications, transitions);
+}
+
+Symsptr MbD::PiecewiseFunction::differentiateWRT(Symsptr var)
+{
+	// The pieces are functions of var themselves (of time; a RampStep's
+	// middle piece is a Polynomial of x, whose own derivative applies the
+	// chain rule through x), and x only selects one. So the derivative is
+	// the same selection of the pieces' derivatives with respect to var:
+	// d/dt piecewise(x, f) = piecewise(x, df/dt). FunctionX's
+	// differentiateWRTx() * dx/dvar was right only for x = var, and gave
+	// pieces differentiated with respect to x (0 for a piece of time) times
+	// dx/dt otherwise. The jumps at the transitions are not seen.
+	if (this == var.get()) return sptrConstant(1.0);
+	auto derivatives = std::make_shared<std::vector<Symsptr>>();
+	std::transform(functions->begin(),
+		functions->end(),
+		std::back_inserter(*derivatives),
+		[&](auto& func) { return func->differentiateWRT(var); }
+	);
+	return std::make_shared<PiecewiseFunction>(xx, derivatives, transitions);
 }
 
 Symsptr MbD::PiecewiseFunction::differentiateWRTx()

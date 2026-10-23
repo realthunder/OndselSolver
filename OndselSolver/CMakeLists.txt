@@ -280,6 +280,7 @@ set(ONDSELSOLVER_SRC
         ScrewConstraintIqcJqc.cpp
         ScrewJoint.cpp
         SimulationStoppingError.cpp
+        Sign.cpp
         Sine.cpp
         SingularMatrixError.cpp
         Solver.cpp
@@ -598,6 +599,7 @@ set(ONDSELSOLVER_HEADERS
         ScrewConstraintIqcJqc.h
         ScrewJoint.h
         SimulationStoppingError.h
+        Sign.h
         Sine.h
         SingularMatrixError.h
         Solver.h
