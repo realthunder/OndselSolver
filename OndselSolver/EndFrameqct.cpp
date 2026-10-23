@@ -6,6 +6,9 @@
  *   See LICENSE file for details about copyright.                         *
  ***************************************************************************/
  
+#include <cmath>
+#include <limits>
+
 #include "EndFrameqct.h"
 #include "MarkerFrame.h"
 #include "System.h"
@@ -365,4 +368,16 @@ void EndFrameqct::preAccIC()
 bool MbD::EndFrameqct::isEndFrameqc()
 {
 	return false;
+}
+
+double MbD::EndFrameqct::turnAboutZ()
+{
+	// aAme is Rz(phi) Rx(the) Rz(psi): a turn about z alone when the (theta) is 0.
+	if (!phiThePsiBlks) {
+		return 0.0;
+	}
+	if (phiThePsiBlks->at(1)->getValue() != 0.0) {
+		return std::numeric_limits<double>::quiet_NaN();
+	}
+	return phiThePsiBlks->at(0)->getValue() + phiThePsiBlks->at(2)->getValue();
 }

@@ -19,9 +19,11 @@ set(ONDSELSOLVER_SRC
         AngleZConstraintIJ.cpp
         AngleZConstraintIqcJc.cpp
         AngleZConstraintIqcJqc.cpp
+        AngleZConstraintIqctJqc.cpp
         AngleZIecJec.cpp
         AngleZIeqcJec.cpp
         AngleZIeqcJeqc.cpp
+        AngleZIeqctJeqc.cpp
         AnyGeneralSpline.cpp
         AnyPosICNewtonRaphson.cpp
         ArcSine.cpp
@@ -338,9 +340,11 @@ set(ONDSELSOLVER_HEADERS
         AngleZConstraintIJ.h
         AngleZConstraintIqcJc.h
         AngleZConstraintIqcJqc.h
+        AngleZConstraintIqctJqc.h
         AngleZIecJec.h
         AngleZIeqcJec.h
         AngleZIeqcJeqc.h
+        AngleZIeqctJeqc.h
         AnyGeneralSpline.h
         AnyPosICNewtonRaphson.h
         ArcSine.h

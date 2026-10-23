@@ -51,6 +51,10 @@ namespace MbD {
 		FColDsptr rpep() override;
 		void preAccIC() override;
 		bool isEndFrameqc() override;
+		// The frame's turn about its z relative to its marker, from the angle
+		// blocks at the system's time with whole turns, when the motion turns
+		// it about z alone; NaN when it does not (0 with no angle blocks).
+		virtual double turnAboutZ();
 
 		std::shared_ptr<FullColumn<Symsptr>> rmemBlks, prmemptBlks, pprmemptptBlks;
 		std::shared_ptr<FullColumn<Symsptr>> phiThePsiBlks, pPhiThePsiptBlks, ppPhiThePsiptptBlks;

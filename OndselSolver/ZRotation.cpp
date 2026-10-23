@@ -9,7 +9,7 @@
 #include "System.h"
 #include "ZRotation.h"
 #include "FullColumn.h"
-#include "DirectionCosineConstraintIJ.h"
+#include "AngleZConstraintIqctJqc.h"
 #include "EndFrameqc.h"
 #include "EndFrameqct.h"
 #include "CREATE.h"
@@ -28,8 +28,12 @@ void ZRotation::initializeGlobally()
 {
 	if (constraints->empty()) {
 		initMotions();
-		auto dirCosCon = CREATE<DirectionCosineConstraintIqcJqc>::ConstraintWith(frmI, frmJ, 1, 0);	//Use Iy and Jx to make sin(theta).
-		addConstraint(dirCosCon);
+		// The angle itself, with its turns counted, not the direction cosine
+		// of I's y and J's x (its sine): the sine is zero half a turn away
+		// too, and a command that moved more than a quarter turn since the
+		// last output time took the body to that root.
+		auto angleCon = AngleZConstraintIqctJqc::With(frmI, frmJ);
+		addConstraint(angleCon);
 		this->root()->hasChanged = true;
 	}
 	else {

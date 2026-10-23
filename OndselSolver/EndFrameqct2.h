@@ -28,6 +28,7 @@ namespace MbD {
 		void evalAme() override;
 		void evalpAmept() override;
 		void evalppAmeptpt() override;
+		double turnAboutZ() override;
 
 	};
 }

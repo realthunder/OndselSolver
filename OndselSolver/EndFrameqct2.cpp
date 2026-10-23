@@ -6,6 +6,8 @@
  *   See LICENSE file for details about copyright.                         *
  ***************************************************************************/
  
+#include <limits>
+
 #include "EndFrameqct2.h"
 #include "MarkerFrame.h"
 #include "System.h"
@@ -60,4 +62,26 @@ void EndFrameqct2::evalppAmeptpt()
 	auto eulerAnglesDDot = std::static_pointer_cast<EulerAnglesDDot<Symsptr>>(ppPhiThePsiptptBlks);
 	eulerAnglesDDot->calc();
 	ppAmeptpt = eulerAnglesDDot->aAddot;
+}
+
+double MbD::EndFrameqct2::turnAboutZ()
+{
+	// aAme is the product of the turns in rotOrder (1, 2, 3 for x, y, z): a
+	// turn about z alone when every angle about x or y is 0.
+	if (!phiThePsiBlks) {
+		return 0.0;
+	}
+	auto eulerAngles = std::static_pointer_cast<EulerAngles<Symsptr>>(phiThePsiBlks);
+	double turn = 0.0;
+	for (size_t i = 0; i < 3; i++)
+	{
+		auto angle = eulerAngles->at(i)->getValue();
+		if (eulerAngles->rotOrder->at(i) == 3) {
+			turn += angle;
+		}
+		else if (angle != 0.0) {
+			return std::numeric_limits<double>::quiet_NaN();
+		}
+	}
+	return turn;
 }
