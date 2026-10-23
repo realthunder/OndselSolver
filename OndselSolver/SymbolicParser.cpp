@@ -22,6 +22,10 @@
 #include "ArcTan.h"
 #include "Sine.h"
 #include "Cosine.h"
+#include "Tan.h"
+#include "Exponential.h"
+#include "Ln.h"
+#include "Sqrt.h"
 #include "Negative.h"
 #include "Reciprocal.h"
 #include "GeneralSpline.h"
@@ -367,6 +371,18 @@ bool MbD::SymbolicParser::intrinsic()
 	}
 	else if (peekForTypevalue("word", "sin")) {
 		symfunc = std::make_shared<Sine>();
+	}
+	else if (peekForTypevalue("word", "tan")) {
+		symfunc = std::make_shared<Tan>();
+	}
+	else if (peekForTypevalue("word", "exp")) {
+		symfunc = std::make_shared<Exponential>();
+	}
+	else if (peekForTypevalue("word", "ln")) {
+		symfunc = std::make_shared<Ln>();
+	}
+	else if (peekForTypevalue("word", "sqrt")) {
+		symfunc = std::make_shared<Sqrt>();
 	}
 	else if (peekForTypevalue("word", "spline")) {
 		symfunc = std::make_shared<GeneralSpline>();

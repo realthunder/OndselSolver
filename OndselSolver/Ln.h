@@ -18,7 +18,10 @@ namespace MbD {
         Ln() = default;
         Ln(Symsptr arg);
         double getValue() override;
+        Symsptr differentiateWRTx() override;
         Symsptr copyWith(Symsptr arg) override;
+
+        std::ostream& printOn(std::ostream& s) const override;
 
 
 

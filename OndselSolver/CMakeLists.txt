@@ -289,6 +289,7 @@ set(ONDSELSOLVER_SRC
         SparseVector.cpp
         SphericalJoint.cpp
         SphSphJoint.cpp
+        Sqrt.cpp
         StableBackwardDifference.cpp
         StateData.cpp
         Sum.cpp
@@ -299,6 +300,7 @@ set(ONDSELSOLVER_SRC
         SystemNewtonRaphson.cpp
         SystemSolver.cpp
         SymTime.cpp
+        Tan.cpp
         TooManyTriesError.cpp
         TooSmallStepSizeError.cpp
         Translation.cpp
@@ -605,6 +607,7 @@ set(ONDSELSOLVER_HEADERS
         SparseVector.h
         SphericalJoint.h
         SphSphJoint.h
+        Sqrt.h
         StableBackwardDifference.h
         StateData.h
         Sum.h
@@ -615,6 +618,7 @@ set(ONDSELSOLVER_HEADERS
         SystemNewtonRaphson.h
         SystemSolver.h
         SymTime.h
+        Tan.h
         TooManyTriesError.h
         TooSmallStepSizeError.h
         Translation.h

@@ -24,9 +24,10 @@ double MbD::Reciprocal::getValue()
 
 Symsptr MbD::Reciprocal::differentiateWRTx()
 {
+	// d(1/x)/dx = -1/x^2 (this returned -x^2)
 	auto two = sptrConstant(2);
 	auto sq = std::make_shared<Power>(xx, two);
-	return std::make_shared<Negative>(sq);
+	return std::make_shared<Negative>(std::make_shared<Reciprocal>(sq));
 }
 
 Symsptr MbD::Reciprocal::copyWith(Symsptr arg)

@@ -6,6 +6,8 @@
  *   See LICENSE file for details about copyright.                         *
  ***************************************************************************/
  
+#include <cmath>
+
 #include "Exponential.h"
 
 using namespace MbD;
@@ -16,7 +18,12 @@ MbD::Exponential::Exponential(Symsptr arg) : FunctionX(arg)
 
 double MbD::Exponential::getValue()
 {
-    return std::log(xx->getValue());
+    return std::exp(xx->getValue());
+}
+
+Symsptr MbD::Exponential::differentiateWRTx()
+{
+    return std::make_shared<Exponential>(xx);
 }
 
 Symsptr MbD::Exponential::copyWith(Symsptr arg)
