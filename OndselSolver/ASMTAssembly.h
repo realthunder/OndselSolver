@@ -98,7 +98,9 @@ namespace MbD {
 		void solve();
 
 		void runPreDrag();
-		void runDragStep(std::shared_ptr<std::vector<std::shared_ptr<ASMTPart>>> dragParts);
+		// False when no attempt converged and the parts were restored to where
+		// the previous step left them.
+		bool runDragStep(std::shared_ptr<std::vector<std::shared_ptr<ASMTPart>>> dragParts);
 		void runPostDrag();
 		void restorePosRot();
 		void runKINEMATIC();

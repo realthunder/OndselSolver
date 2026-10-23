@@ -1344,7 +1344,7 @@ void MbD::ASMTAssembly::runPreDrag()
     mbdSystem->runPreDrag(mbdSystem);
 }
 
-void MbD::ASMTAssembly::runDragStep(
+bool MbD::ASMTAssembly::runDragStep(
     std::shared_ptr<std::vector<std::shared_ptr<ASMTPart>>> dragASMTParts)
 {
     if (debug) {
@@ -1417,6 +1417,7 @@ void MbD::ASMTAssembly::runDragStep(
         }
     }
     if (!success) restorePosRot();
+    return success;
 }
 
 void MbD::ASMTAssembly::runPostDrag()
