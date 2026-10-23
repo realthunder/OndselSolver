@@ -97,28 +97,27 @@ void MbD::ASMTGeneralMotion::createMbD(std::shared_ptr<System> mbdSys, std::shar
 	parser->owner = this;
 	auto geoTime = owner->root()->geoTime();
 	parser->variables->insert(std::make_pair("time", geoTime));
-	std::shared_ptr< BasicUserFunction> userFunc;
+	// The text through SymbolicParser, or the host's function when one is set.
+	auto geoFunction = [&](const std::string& text, const ExternalTimeFunction& function) -> Symsptr {
+		if (function) {
+			return std::make_shared<ExternalFunction>(geoTime, function, 0, text);
+		}
+		auto userFunc = std::make_shared<BasicUserFunction>(text, 1.0);
+		parser->parseUserFunction(userFunc);
+		return parser->stack->top();
+	};
 	auto fullMotion = std::static_pointer_cast<FullMotion>(mbdObject);
 
 	//rIJI
-	userFunc = std::make_shared<BasicUserFunction>(rIJI->at(0), 1.0);
-	parser->parseUserFunction(userFunc);
-	auto& geoX = parser->stack->top();
-	geoX = Symbolic::times(geoX, sptrConstant(1.0 / mbdUnits->length));
+	auto geoX = Symbolic::times(geoFunction(rIJI->at(0), rIJIFunctions[0]), sptrConstant(1.0 / mbdUnits->length));
 	geoX->createMbD(mbdSys, mbdUnits);
 	auto xBlk = geoX->simplified(geoX);
 
-	userFunc = std::make_shared<BasicUserFunction>(rIJI->at(1), 1.0);
-	parser->parseUserFunction(userFunc);
-	auto& geoY = parser->stack->top();
-	geoY = Symbolic::times(geoY, sptrConstant(1.0 / mbdUnits->length));
+	auto geoY = Symbolic::times(geoFunction(rIJI->at(1), rIJIFunctions[1]), sptrConstant(1.0 / mbdUnits->length));
 	geoY->createMbD(mbdSys, mbdUnits);
 	auto yBlk = geoY->simplified(geoY);
 
-	userFunc = std::make_shared<BasicUserFunction>(rIJI->at(2), 1.0);
-	parser->parseUserFunction(userFunc);
-	auto& geoZ = parser->stack->top();
-	geoZ = Symbolic::times(geoZ, sptrConstant(1.0 / mbdUnits->length));
+	auto geoZ = Symbolic::times(geoFunction(rIJI->at(2), rIJIFunctions[2]), sptrConstant(1.0 / mbdUnits->length));
 	geoZ->createMbD(mbdSys, mbdUnits);
 	auto zBlk = geoZ->simplified(geoZ);
 
@@ -126,24 +125,15 @@ void MbD::ASMTGeneralMotion::createMbD(std::shared_ptr<System> mbdSys, std::shar
 	fullMotion->frIJI = std::make_shared<FullColumn<Symsptr>>(xyzBlkList);
 
 	//angIJJ
-	userFunc = std::make_shared<BasicUserFunction>(angIJJ->at(0), 1.0);
-	parser->parseUserFunction(userFunc);
-	auto& geoPhi = parser->stack->top();
-	geoPhi = Symbolic::times(geoPhi, sptrConstant(1.0 / mbdUnits->angle));
+	auto geoPhi = Symbolic::times(geoFunction(angIJJ->at(0), angIJJFunctions[0]), sptrConstant(1.0 / mbdUnits->angle));
 	geoPhi->createMbD(mbdSys, mbdUnits);
 	auto phiBlk = geoPhi->simplified(geoPhi);
 
-	userFunc = std::make_shared<BasicUserFunction>(angIJJ->at(1), 1.0);
-	parser->parseUserFunction(userFunc);
-	auto& geoThe = parser->stack->top();
-	geoThe = Symbolic::times(geoThe, sptrConstant(1.0 / mbdUnits->angle));
+	auto geoThe = Symbolic::times(geoFunction(angIJJ->at(1), angIJJFunctions[1]), sptrConstant(1.0 / mbdUnits->angle));
 	geoThe->createMbD(mbdSys, mbdUnits);
 	auto theBlk = geoThe->simplified(geoThe);
 
-	userFunc = std::make_shared<BasicUserFunction>(angIJJ->at(2), 1.0);
-	parser->parseUserFunction(userFunc);
-	auto& geoPsi = parser->stack->top();
-	geoPsi = Symbolic::times(geoPsi, sptrConstant(1.0 / mbdUnits->angle));
+	auto geoPsi = Symbolic::times(geoFunction(angIJJ->at(2), angIJJFunctions[2]), sptrConstant(1.0 / mbdUnits->angle));
 	geoPsi->createMbD(mbdSys, mbdUnits);
 	auto psiBlk = geoPsi->simplified(geoPsi);
 
@@ -151,6 +141,18 @@ void MbD::ASMTGeneralMotion::createMbD(std::shared_ptr<System> mbdSys, std::shar
 	auto fangIJJ = std::make_shared<EulerAngles<Symsptr>>(xyzRotBlkList);
 	fangIJJ->rotOrder = rotationOrder;
 	fullMotion->fangIJJ = fangIJJ;
+}
+
+void MbD::ASMTGeneralMotion::setrIJI(size_t i, const std::string& text, ExternalTimeFunction function)
+{
+	rIJI->at(i) = text;
+	rIJIFunctions.at(i) = std::move(function);
+}
+
+void MbD::ASMTGeneralMotion::setangIJJ(size_t i, const std::string& text, ExternalTimeFunction function)
+{
+	angIJJ->at(i) = text;
+	angIJJFunctions.at(i) = std::move(function);
 }
 
 void MbD::ASMTGeneralMotion::storeOnLevel(std::ofstream& os, size_t level)

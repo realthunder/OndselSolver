@@ -72,9 +72,15 @@ void MbD::ASMTRotationalMotion::createMbD(std::shared_ptr<System> mbdSys, std::s
 	parser->owner = this;
 	auto geoTime = owner->root()->geoTime();
 	parser->variables->insert(std::make_pair("time", geoTime));
-	auto userFunc = std::make_shared<BasicUserFunction>(rotationZ, 1.0);
-	parser->parseUserFunction(userFunc);
-	auto& geoPhi = parser->stack->top();
+	Symsptr geoPhi;
+	if (rotationZFunction) {
+		geoPhi = std::make_shared<ExternalFunction>(geoTime, rotationZFunction, 0, rotationZ);
+	}
+	else {
+		auto userFunc = std::make_shared<BasicUserFunction>(rotationZ, 1.0);
+		parser->parseUserFunction(userFunc);
+		geoPhi = parser->stack->top();
+	}
 	//std::cout << *geoPhi << std::endl;
 	geoPhi = Symbolic::times(geoPhi, sptrConstant(1.0 / mbdUnits->angle));
 	geoPhi->createMbD(mbdSys, mbdUnits);
@@ -97,6 +103,13 @@ void MbD::ASMTRotationalMotion::setMotionJoint(const std::string& str)
 void MbD::ASMTRotationalMotion::setRotationZ(const std::string& rotZ)
 {
 	rotationZ = rotZ;
+	rotationZFunction = nullptr;
+}
+
+void MbD::ASMTRotationalMotion::setRotationZ(const std::string& rotZ, ExternalTimeFunction function)
+{
+	rotationZ = rotZ;
+	rotationZFunction = std::move(function);
 }
 
 void MbD::ASMTRotationalMotion::storeOnLevel(std::ofstream& os, size_t level)

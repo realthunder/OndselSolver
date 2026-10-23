@@ -10,6 +10,7 @@
 
 #include "ASMTMotion.h"
 #include "ZRotation.h"
+#include "ExternalFunction.h"
 
 namespace MbD {
     class ASMTRotationalMotion : public ASMTMotion
@@ -25,10 +26,15 @@ namespace MbD {
         std::shared_ptr<ItemIJ> mbdClassNew() override;
         void setMotionJoint(const std::string& motionJoint);
         void setRotationZ(const std::string& rotZ);
+        // The rotation as a function the host evaluates (ExternalFunction)
+        // instead of SymbolicParser's reading of the text; the text stays
+        // what the ASMT file records.
+        void setRotationZ(const std::string& rotZ, ExternalTimeFunction function);
         void storeOnLevel(std::ofstream& os, size_t level) override;
         void storeOnTimeSeries(std::ofstream& os) override;
 
         std::string motionJoint, rotationZ;
+        ExternalTimeFunction rotationZFunction;
     };
 }
 

@@ -170,6 +170,7 @@ set(ONDSELSOLVER_SRC
         EulerParametersDot.cpp
         Exponential.cpp
         ExpressionX.cpp
+        ExternalFunction.cpp
         ExternalSystem.cpp
         FixedJoint.cpp
         ForceTorqueData.cpp
@@ -491,6 +492,7 @@ set(ONDSELSOLVER_HEADERS
         EulerParametersDot.h
         Exponential.h
         ExpressionX.h
+        ExternalFunction.h
         ExternalSystem.h
         FixedJoint.h
         ForceTorqueData.h
