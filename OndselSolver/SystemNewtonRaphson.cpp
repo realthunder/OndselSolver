@@ -42,9 +42,6 @@ void SystemNewtonRaphson::createVectorsAndMatrices()
 
 std::shared_ptr<MatrixSolver> SystemNewtonRaphson::matrixSolverClassNew()
 {
-	if (legacyElimination) {
-		return CREATE<GESpMatParPvMarkoFast>::With();
-	}
 	return CREATE<SparseLUSolver>::With();
 }
 

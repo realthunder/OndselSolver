@@ -43,7 +43,7 @@ namespace MbD {
         virtual void askSystemToUpdate();
         virtual void passRootToSystem() = 0;
         bool isConvergedToNumericalLimit();
-        void calcDXNormImproveRootCalcYNorm();
+        virtual void calcDXNormImproveRootCalcYNorm();
         void postRun() override;
         
         SystemSolver* system = nullptr; //Use raw pointer when pointing backwards.

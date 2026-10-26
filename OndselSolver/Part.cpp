@@ -261,6 +261,12 @@ void Part::fillqsu(FColDsptr col)
 void Part::fillqsuWeights(DiagMatDsptr diagMat)
 {
 	//"Map wqX and wqE according to inertias. (0 to maximum inertia) map to (minw to maxw)"
+	// The rotations against the maximum mass, not the maximum inertia: aJ / m
+	// is a length squared, so a turn weighs as much as moving the mass by that
+	// radius along its arc. Normalised on its own, a turn of a radian weighed
+	// what moving the part half a unit of length does whatever the part's size,
+	// and a minimum movement step turned parts through radians where moving
+	// them a little would do -- steps far beyond where they linearise.
 	//"When the inertias are zero, they are set to a small number for positive definiteness."
 	//"They are not set to zero because inertialess part may be underconstrained."
 	//"Avoid having two kinds of singularities to confuse redundant constraint removal."
@@ -268,7 +274,6 @@ void Part::fillqsuWeights(DiagMatDsptr diagMat)
 	//"wqE(4) = 0.0d is ok because there is always the euler parameter constraint."
 
 	auto mMax = this->root()->maximumMass();
-	auto aJiMax = this->root()->maximumMomentOfInertia();
 	double minw = 1.0e3;
 	double maxw = 1.0e6;
 	auto wqX = std::make_shared<DiagonalMatrix<double>>(3);
@@ -278,11 +283,10 @@ void Part::fillqsuWeights(DiagMatDsptr diagMat)
 	{
 		wqX->at(i) = (maxw * m / mMax) + minw;
 	}
-	if (aJiMax == 0) { aJiMax = 1.0; }
 	for (size_t i = 0; i < 3; i++)
 	{
 		auto aJi = aJ->at(i);
-		wqE->at(i) = (maxw * aJi / aJiMax) + minw;
+		wqE->at(i) = (maxw * aJi / mMax) + minw;
 	}
 	wqE->at(3) = minw;
 	diagMat->atiputDiagonalMatrix(partFrame->iqX, wqX);

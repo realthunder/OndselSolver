@@ -28,6 +28,7 @@ namespace MbD {
         void passRootToSystem() override;
         void assignEquationNumbers() override;
         bool isConverged() override;
+        void calcdxNorm() override;
 
         size_t nqsu = SIZE_MAX;
         FColDsptr qsuOld;

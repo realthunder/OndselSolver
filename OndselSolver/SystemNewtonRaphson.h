@@ -28,9 +28,6 @@ namespace MbD {
         void outputSpreadsheet();
 
         SpMatDsptr pypx;
-        // The steps by GESpMatParPvMarkoFast, as before SparseLUSolver
-        // (PosICNewtonRaphson::run() falls back on it).
-        bool legacyElimination = false;
     };
 }
 

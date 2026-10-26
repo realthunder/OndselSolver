@@ -23,12 +23,14 @@ namespace MbD {
         void preRun() override;
         void assignEquationNumbers() override;
         bool isConverged() override;
+        void calcDXNormImproveRootCalcYNorm() override;
+        double constraintNorm() const;
         void handleSingularMatrix() override;
         void lookForRedundantConstraints();
 
         std::shared_ptr<std::vector<size_t>> pivotRowLimits;
-        // run() can solve again from its start with GESpMatParPvMarkoFast
-        bool canReplay = false;
+        // Newton steps given up for steps that only restore the constraints
+        bool restoring = false;
     };
 }
 

@@ -6,7 +6,11 @@
  *   See LICENSE file for details about copyright.                         *
  ***************************************************************************/
 
+#include <cmath>
+#include <iomanip>
 #include <iostream>
+#include <limits>
+#include <sstream>
  
 #include "AnyPosICNewtonRaphson.h"
 #include "SystemSolver.h"
@@ -104,4 +108,24 @@ void MbD::AnyPosICNewtonRaphson::assignEquationNumbers()
 bool MbD::AnyPosICNewtonRaphson::isConverged()
 {
 	return dxNorms->at(iterNo) < dxTol || isConvergedToNumericalLimit();
+}
+
+void AnyPosICNewtonRaphson::calcdxNorm()
+{
+	// The step of the positions qsu alone. The multipliers come to the weights
+	// (up to 1e6) times the distances from the start times the lever arms: on
+	// a solve that ends some distance from its start they reach 1e10, and the
+	// rounding of their steps stays above the tolerances of
+	// isConvergedToNumericalLimit, which are those of positions, so such a
+	// solve never stopped.
+	double sum = 0.0;
+	for (size_t i = 0; i < nqsu; i++) {
+		sum += dx->at(i) * dx->at(i);
+	}
+	dxNorm = nqsu > 0 ? std::sqrt(sum / static_cast<double>(nqsu)) : 0.0;
+	std::stringstream ss;
+	ss << std::setprecision(std::numeric_limits<double>::max_digits10);
+	ss << "MbD: Convergence = " << dxNorm;
+	auto str = ss.str();
+	system->logString(str);
 }
