@@ -15,6 +15,7 @@
 #include "SimulationStoppingError.h"
 #include "GESpMatParPvPrecise.h"
 #include "CREATE.h"
+#include "SparseLUSolver.h"
 
 using namespace MbD;
 
@@ -127,7 +128,7 @@ void MbD::AccNewtonRaphson::handleSingularMatrix()
 {
     auto& r = *matrixSolver;
 	std::string str = typeid(r).name();
-	if (str.find("GESpMatParPvMarkoFast") != std::string::npos) {
+	if (SparseLUSolver::isFastSolver(r)) {
 		matrixSolver = CREATE<GESpMatParPvPrecise>::With();
 		this->solveEquations();
 	} else {

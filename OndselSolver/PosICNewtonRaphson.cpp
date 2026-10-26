@@ -17,11 +17,38 @@
 #include "CREATE.h"
 #include "GESpMatParPvPrecise.h"
 #include "GESpMatFullPvPosIC.h"
+#include "SparseLUSolver.h"
 
 using namespace MbD;
 
+namespace {
+	// Thrown by isConverged() when the steps grow far beyond the first one
+	struct Wandering {};
+}
+
 void PosICNewtonRaphson::run()
 {
+	// Where the iteration wanders far from its start before it converges, if
+	// it does, the outcome -- which equations are found redundant on the way,
+	// which pose it ends in -- turns on the last bits of every step, and
+	// SparseLUSolver's differ from those of the row scaled Gaussian
+	// elimination this solver used before it. Such a run is solved once more
+	// from its start that way, all constraints back, so that it ends as it
+	// did before.
+	canReplay = !legacyElimination && system->allRedundantConstraints()->empty();
+	auto replayWithElimination = [&]() {
+		if (!canReplay) {
+			return false;
+		}
+		std::string str("MbD: Solving again with Gaussian elimination.");
+		system->logString(str);
+		canReplay = false;
+		legacyElimination = true;
+		nSingularMatrixError = 0;
+		system->partsJointsMotionsDo([&](std::shared_ptr<Item> item) { item->reactivateRedundantConstraints(); });
+		system->partsJointsMotionsDo([&](std::shared_ptr<Item> item) { item->setqsu(qsuOld); });
+		return true;
+	};
 	while (true) {
 		try {
 			//VectorNewtonRaphson::run();   //Inline to help debugging
@@ -32,9 +59,23 @@ void PosICNewtonRaphson::run()
 			postRun();
 			break;
 		}
+		catch (const Wandering&) {
+			replayWithElimination();
+		}
 		catch (const SingularMatrixError& ex) {
 			auto redundantEqnNos = ex.getRedundantEqnNos();
+			auto nRedundant = system->allRedundantConstraints()->size();
 			system->partsJointsMotionsDo([&](std::shared_ptr<Item> item) { item->removeRedundantConstraints(redundantEqnNos); });
+			if (system->allRedundantConstraints()->size() == nRedundant) {
+				// Nothing new set aside: the next round would solve the same
+				// system from the same start and end here again, for ever.
+				if (replayWithElimination()) {
+					continue;
+				}
+				std::string str("MbD: Singular matrix with no redundant constraint left to remove.");
+				system->logString(str);
+				throw SimulationStoppingError("singular matrix, no redundant constraint found");
+			}
 			system->partsJointsMotionsDo([&](std::shared_ptr<Item> item) { item->constraintsReport(); });
 			system->partsJointsMotionsDo([&](std::shared_ptr<Item> item) { item->setqsu(qsuOld); });
 		}
@@ -96,6 +137,14 @@ void PosICNewtonRaphson::assignEquationNumbers()
 
 bool PosICNewtonRaphson::isConverged()
 {
+	// A step a thousand times the first (and above 1) is no Newton iteration
+	// converging: see run().
+	if (canReplay && iterNo > 0) {
+		auto dxNormIterNo = dxNorms->at(iterNo);
+		if (dxNormIterNo > 1.0 && dxNormIterNo > 1.0e3 * dxNorms->at(0)) {
+			throw Wandering();
+		}
+	}
 	return this->isConvergedToNumericalLimit();
 }
 
@@ -109,7 +158,7 @@ void PosICNewtonRaphson::handleSingularMatrix()
 	else {
         auto& r = *matrixSolver;
 		std::string str = typeid(r).name();
-		if (str.find("GESpMatParPvMarkoFast") != std::string::npos) {
+		if (SparseLUSolver::isFastSolver(r)) {
 		    matrixSolver = CREATE<GESpMatParPvPrecise>::With();
 		    this->solveEquations();
 		}

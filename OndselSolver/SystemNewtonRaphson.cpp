@@ -16,6 +16,7 @@
 #include "GESpMatParPvMarkoFast.h"
 #include "CREATE.h"
 #include "GESpMatParPvPrecise.h"
+#include "SparseLUSolver.h"
 
 using namespace MbD;
 
@@ -41,7 +42,10 @@ void SystemNewtonRaphson::createVectorsAndMatrices()
 
 std::shared_ptr<MatrixSolver> SystemNewtonRaphson::matrixSolverClassNew()
 {
-	return CREATE<GESpMatParPvMarkoFast>::With();
+	if (legacyElimination) {
+		return CREATE<GESpMatParPvMarkoFast>::With();
+	}
+	return CREATE<SparseLUSolver>::With();
 }
 
 void SystemNewtonRaphson::calcdxNorm()
@@ -67,7 +71,7 @@ void SystemNewtonRaphson::handleSingularMatrix()
 {
     auto& r = *matrixSolver;
 	std::string str = typeid(r).name();
-	if (str.find("GESpMatParPvMarkoFast") != std::string::npos) {
+	if (SparseLUSolver::isFastSolver(r)) {
 		matrixSolver = CREATE<GESpMatParPvPrecise>::With();
 		this->solveEquations();
 	}

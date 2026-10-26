@@ -291,6 +291,7 @@ set(ONDSELSOLVER_SRC
         SingularMatrixError.cpp
         Solver.cpp
         SparseColumn.cpp
+        SparseLUSolver.cpp
         SparseMatrix.cpp
         SparseRow.cpp
         SparseVector.cpp
@@ -616,6 +617,7 @@ set(ONDSELSOLVER_HEADERS
         SingularMatrixError.h
         Solver.h
         SparseColumn.h
+        SparseLUSolver.h
         SparseMatrix.h
         SparseRow.h
         SparseVector.h
@@ -664,6 +666,17 @@ set_target_properties(OndselSolver
         SOVERSION 1
         PUBLIC_HEADER "${ONDSELSOLVER_HEADERS}"
 )
+
+# Eigen (headers only) for the sparse LU of the Newton steps
+# (SparseLUSolver.cpp); a host build that found it already passes it on.
+if(NOT TARGET Eigen3::Eigen AND NOT EIGEN3_INCLUDE_DIR)
+    find_package(Eigen3 REQUIRED NO_MODULE)
+endif()
+if(TARGET Eigen3::Eigen)
+    target_link_libraries(OndselSolver PRIVATE Eigen3::Eigen)
+else()
+    target_include_directories(OndselSolver PRIVATE ${EIGEN3_INCLUDE_DIR})
+endif()
 
 if(WIN32)
     target_compile_definitions(OndselSolver PRIVATE _USE_MATH_DEFINES)

@@ -27,6 +27,8 @@ namespace MbD {
         void lookForRedundantConstraints();
 
         std::shared_ptr<std::vector<size_t>> pivotRowLimits;
+        // run() can solve again from its start with GESpMatParPvMarkoFast
+        bool canReplay = false;
     };
 }
 
